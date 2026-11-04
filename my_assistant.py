@@ -1,0 +1,57 @@
+HANDOFF_WORDS = ["book", "cancel", "reschedule", "change"]
+
+
+class LashAssistant:
+    """A mock assistant that answers lash appointment availability questions."""
+
+    def __init__(self, name, tool):
+        self.name = name
+        self.tool = tool
+        self.history = []
+
+    def respond(self, user_message):
+        """Record the conversation and return a reply."""
+        self.history.append({"role": "user", "content": user_message})
+
+        reply = self.choose_reply(user_message)
+
+        self.history.append({"role": "assistant", "content": reply})
+        return reply
+
+    def choose_reply(self, user_message):
+        """Choose a response based on simple rules."""
+        text = user_message.lower()
+
+        for word in HANDOFF_WORDS:
+            if word in text:
+                return (
+                    "I can't book or change appointments. "
+                    "I'm passing you to a person who can update the schedule."
+                )
+
+        if "hello" in text or "hi" in text:
+            return (
+                f"Hello! I'm {self.name}. I can check available lash appointment times."
+            )
+
+        if "available" in text or "open" in text or "appointment" in text:
+            return self.availability_reply(user_message)
+
+        return (
+            "I'm not sure how to help with that. "
+            "I can check available lash appointment times."
+        )
+
+    def availability_reply(self, user_message):
+        """Use the tool to answer an availability question."""
+        day = self.tool.find_day(user_message)
+
+        if day is None:
+            return "Which day would you like me to check?"
+
+        times = self.tool.times_for(day)
+
+        if not times:
+            return f"There are no available appointments on {day}."
+
+        return f"Available times on {day}: {', '.join(times)}."

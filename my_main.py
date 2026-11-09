@@ -1,5 +1,18 @@
+# my_main.py
+# Author: Maliyah Timothy
+
 from my_assistant import LashAssistant
 from my_tool import AppointmentLookup
+from ollama_model import OllamaModel
+
+MODEL_NAME = "granite4.1:3b"
+
+INSTRUCTIONS = """You are Lumi, a helpful lash appointment assistant.
+Answer in one short sentence.
+Clients should arrive with clean lashes and no eye makeup.
+Hybrid sets combine classic lashes with volume fans.
+Only state facts that appear in these instructions.
+If you do not know, say you do not know and offer to pass the customer to a person."""
 
 availability = {
     "monday": ["4:00 PM"],
@@ -8,7 +21,8 @@ availability = {
 }
 
 tool = AppointmentLookup(availability)
-assistant = LashAssistant("Lumi", tool)
+model = OllamaModel(MODEL_NAME)
+assistant = LashAssistant("Lumi", INSTRUCTIONS, tool, model)
 
 print("Type a message, or type quit to stop.")
 

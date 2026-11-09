@@ -1,12 +1,18 @@
+from email.mime import text
+
+
 HANDOFF_WORDS = ["book", "cancel", "reschedule", "change"]
 
 
 class LashAssistant:
     """A mock assistant that answers lash appointment availability questions."""
 
-    def __init__(self, name, tool):
+    def __init__(self, name, instructions, tool, model):
+        """Set up the assistant with instructions, an availability tool, and a model."""
         self.name = name
+        self.instructions = instructions
         self.tool = tool
+        self.model = model
         self.history = []
 
     def respond(self, user_message):
@@ -29,18 +35,19 @@ class LashAssistant:
                     "I'm passing you to a person who can update the schedule."
                 )
 
-        if "hello" in text or "hi" in text:
-            return (
-                f"Hello! I'm {self.name}. I can check available lash appointment times."
-            )
-
         if "available" in text or "open" in text or "appointment" in text:
             return self.availability_reply(user_message)
 
-        return (
-            "I'm not sure how to help with that. "
-            "I can check available lash appointment times."
-        )
+        return self.model_reply()
+
+    def model_reply(self):
+        """Ask the model for a reply and provide a safe fallback."""
+        reply = self.model.reply(self.instructions, self.history)
+
+        if reply is None:
+            return "Sorry, I can't answer that right now. Please try again in a moment."
+
+        return reply
 
     def availability_reply(self, user_message):
         """Use the tool to answer an availability question."""
